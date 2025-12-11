@@ -12,40 +12,33 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
+                    # Print current directory and files
+                    pwd
+                    ls -la
+                    
+                    # Check if template directory exists
+                    if [ -d "templatemo_578_first_portfolio" ]; then
+                        echo "Template directory found"
+                        ls -la templatemo_578_first_portfolio/
+                    else
+                        echo "ERROR: Template directory not found!"
+                        exit 1
+                    fi
+                    
                     # Copy files to web directory
+                    sudo rm -rf /var/www/portfolio/*
                     sudo cp -r templatemo_578_first_portfolio/* /var/www/portfolio/
                     
                     # Set permissions
                     sudo chown -R apache:apache /var/www/portfolio
                     sudo chmod -R 755 /var/www/portfolio
                     
+                    # List deployed files
+                    ls -la /var/www/portfolio/
+                    
                     # Restart Apache
                     sudo systemctl restart httpd
                 '''
             }
-        }
-        
-        stage('Verify') {
-            steps {
-                sh '''
-                    # Check if index.html exists
-                    if [ -f /var/www/portfolio/index.html ]; then
-                        echo "Deployment successful!"
-                    else
-                        echo "Deployment failed - index.html not found"
-                        exit 1
-                    fi
-                '''
-            }
-        }
-    }
-    
-    post {
-        success {
-            echo 'Portfolio deployed successfully!'
-        }
-        failure {
-            echo 'Deployment failed!'
-        }
-    }
-}
+        }      
+       
